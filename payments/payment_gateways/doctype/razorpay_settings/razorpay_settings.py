@@ -65,7 +65,6 @@ import json
 from urllib.parse import urlencode
 
 import frappe
-import razorpay
 from frappe import _
 from frappe.integrations.utils import (
 	create_request_log,
@@ -213,6 +212,10 @@ class RazorpaySettings(Document):
 	)
 
 	def init_client(self):
+		# ponytail: lazy import — old razorpay pulls in pkg_resources at module level,
+		# which py3.11+ envs without setuptools lack, breaking DocType sync on migrate.
+		import razorpay
+
 		if self.api_key:
 			secret = self.get_password(fieldname="api_secret", raise_exception=False)
 			self.client = razorpay.Client(auth=(self.api_key, secret))
